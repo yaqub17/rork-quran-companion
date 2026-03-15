@@ -1,0 +1,9 @@
+{
+  "apps": [
+    {
+      "name": "Tilawa",
+      "path": "ios",
+      "framework": "swift"
+    }
+  ]
+}
