@@ -12,10 +12,10 @@ struct OnboardingView: View {
             accentColor: .green
         ),
         OnboardingPage(
-            icon: "text.book.closed.fill",
-            title: "Learn Tajweed Rules",
-            subtitle: "Understand each Tajweed rule with color-coded highlights, detailed explanations, and correct audio examples.",
-            accentColor: .blue
+            icon: "paintpalette.fill",
+            title: "Color-Coded Tajweed",
+            subtitle: "See Tajweed rules highlighted in color as you read. Each color represents a specific rule — Ghunnah, Ikhfa, Qalqalah, Madd, and more.",
+            accentColor: .teal
         ),
         OnboardingPage(
             icon: "chart.line.uptrend.xyaxis",

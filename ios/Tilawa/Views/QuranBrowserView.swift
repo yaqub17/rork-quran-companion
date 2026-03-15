@@ -79,7 +79,11 @@ struct QuranBrowserView: View {
                             .font(.subheadline.weight(.medium))
                             .padding(.horizontal, 14)
                             .padding(.vertical, 8)
-                            .background(viewModel.selectedFilter == filter ? Color.green : Color(.tertiarySystemFill))
+                            .background(
+                                viewModel.selectedFilter == filter
+                                ? AnyShapeStyle(LinearGradient(colors: [.green, .teal], startPoint: .leading, endPoint: .trailing))
+                                : AnyShapeStyle(Color(.tertiarySystemFill))
+                            )
                             .foregroundStyle(viewModel.selectedFilter == filter ? .white : .primary)
                             .clipShape(Capsule())
                     }
@@ -102,7 +106,13 @@ struct SurahRowView: View {
             ZStack {
                 Image(systemName: "diamond.fill")
                     .font(.system(size: 36))
-                    .foregroundStyle(.green.opacity(0.15))
+                    .foregroundStyle(
+                        LinearGradient(
+                            colors: [.green.opacity(0.2), .teal.opacity(0.15)],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
 
                 Text("\(surah.id)")
                     .font(.system(.caption, design: .rounded, weight: .bold))

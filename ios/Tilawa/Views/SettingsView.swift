@@ -43,11 +43,17 @@ struct SettingsView: View {
                     Toggle("Haptic Feedback", isOn: $hapticFeedback)
                 }
 
-                Section("Tajweed Rules") {
+                Section("Tajweed") {
                     NavigationLink {
                         TajweedRulesGuideView()
                     } label: {
                         Label("Tajweed Rules Guide", systemImage: "text.book.closed.fill")
+                    }
+
+                    NavigationLink {
+                        TajweedColorReferenceView()
+                    } label: {
+                        Label("Tajweed Color Reference", systemImage: "paintpalette.fill")
                     }
                 }
 
@@ -71,6 +77,78 @@ struct SettingsView: View {
     }
 }
 
+struct TajweedColorReferenceView: View {
+    var body: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 24) {
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("When reading Quran verses in Tilawa, words are color-coded to show Tajweed rules that apply.")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                        .lineSpacing(4)
+                }
+                .padding(.horizontal)
+
+                VStack(spacing: 0) {
+                    ForEach(TajweedColorRule.allCases, id: \.self) { rule in
+                        HStack(spacing: 14) {
+                            RoundedRectangle(cornerRadius: 6)
+                                .fill(Color(hex: rule.colorHex))
+                                .frame(width: 24, height: 24)
+
+                            VStack(alignment: .leading, spacing: 3) {
+                                HStack(spacing: 6) {
+                                    Text(rule.displayName)
+                                        .font(.subheadline.weight(.medium))
+                                    Text("(\(rule.arabicName))")
+                                        .font(.caption)
+                                        .foregroundStyle(.secondary)
+                                }
+
+                                Text(ruleDescription(rule))
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                                    .lineSpacing(2)
+                            }
+
+                            Spacer()
+                        }
+                        .padding(.vertical, 12)
+                        .padding(.horizontal, 16)
+
+                        if rule != TajweedColorRule.allCases.last {
+                            Divider().padding(.leading, 54)
+                        }
+                    }
+                }
+                .background(Color(.secondarySystemGroupedBackground))
+                .clipShape(.rect(cornerRadius: 16))
+                .padding(.horizontal)
+            }
+            .padding(.vertical)
+        }
+        .background(Color(.systemGroupedBackground))
+        .navigationTitle("Tajweed Colors")
+        .navigationBarTitleDisplayMode(.inline)
+    }
+
+    private func ruleDescription(_ rule: TajweedColorRule) -> String {
+        switch rule {
+        case .ghunnah: "Nasalization held for two counts on Noon/Meem Mushaddad"
+        case .ikhfa: "Concealment of Noon Sakinah with nasalization"
+        case .idgham: "Merging Noon Sakinah into the following letter"
+        case .iqlab: "Converting Noon to Meem before Ba"
+        case .qalqalah: "Echoing bounce on letters ق ط ب ج د when Sakin"
+        case .maddNormal: "Natural prolongation of 2 counts"
+        case .maddMunfasil: "Separated prolongation of 4-5 counts"
+        case .maddMuttasil: "Connected prolongation of 4-5 counts"
+        case .maddLazim: "Obligatory prolongation of 6 counts"
+        case .laamShamsiyyah: "Assimilation of Laam into Sun letters"
+        case .izhar: "Clear pronunciation before throat letters"
+        }
+    }
+}
+
 struct TajweedRulesGuideView: View {
     var body: some View {
         List {
@@ -79,9 +157,9 @@ struct TajweedRulesGuideView: View {
                     ForEach(rulesForCategory(category)) { rule in
                         VStack(alignment: .leading, spacing: 6) {
                             HStack {
-                                Circle()
+                                RoundedRectangle(cornerRadius: 3)
                                     .fill(Color(hex: rule.colorHex))
-                                    .frame(width: 12, height: 12)
+                                    .frame(width: 14, height: 14)
 
                                 Text(rule.name)
                                     .font(.subheadline.weight(.medium))
@@ -114,10 +192,10 @@ struct TajweedRulesGuideView: View {
         switch category {
         case .noonSakinah:
             return [
-                TajweedRule(id: "izhar", name: "Izhar", arabicName: "إظهار", category: category, description: "Clear pronunciation when followed by throat letters", example: "مَنْ أَعْطَى", colorHex: "#2196F3"),
-                TajweedRule(id: "idgham", name: "Idgham", arabicName: "إدغام", category: category, description: "Merging Noon Sakinah into following letter", example: "مِن يَّعْمَلْ", colorHex: "#4CAF50"),
-                TajweedRule(id: "iqlab", name: "Iqlab", arabicName: "إقلاب", category: category, description: "Converting Noon to Meem before Ba", example: "مِنۢ بَعْدِ", colorHex: "#9C27B0"),
-                TajweedRule(id: "ikhfa", name: "Ikhfa", arabicName: "إخفاء", category: category, description: "Concealment with nasalization", example: "مِنْ قَبْلِ", colorHex: "#FF9800"),
+                TajweedRule(id: "izhar", name: "Izhar", arabicName: "إظهار", category: category, description: "Clear pronunciation when followed by throat letters", example: "مَنْ أَعْطَى", colorHex: "#795548"),
+                TajweedRule(id: "idgham", name: "Idgham", arabicName: "إدغام", category: category, description: "Merging Noon Sakinah into following letter", example: "مِن يَّعْمَلْ", colorHex: "#9C27B0"),
+                TajweedRule(id: "iqlab", name: "Iqlab", arabicName: "إقلاب", category: category, description: "Converting Noon to Meem before Ba", example: "مِنۢ بَعْدِ", colorHex: "#E91E63"),
+                TajweedRule(id: "ikhfa", name: "Ikhfa", arabicName: "إخفاء", category: category, description: "Concealment with nasalization", example: "مِنْ قَبْلِ", colorHex: "#2196F3"),
             ]
         case .ghunnah:
             return [
@@ -125,9 +203,9 @@ struct TajweedRulesGuideView: View {
             ]
         case .madd:
             return [
-                TajweedRule(id: "madd_tabii", name: "Madd Tabii", arabicName: "مد طبيعي", category: category, description: "Natural prolongation of 2 counts", example: "قَالَ", colorHex: "#2196F3"),
+                TajweedRule(id: "madd_tabii", name: "Madd Tabii", arabicName: "مد طبيعي", category: category, description: "Natural prolongation of 2 counts", example: "قَالَ", colorHex: "#FF9800"),
                 TajweedRule(id: "madd_munfasil", name: "Madd Munfasil", arabicName: "مد منفصل", category: category, description: "Separated prolongation of 4-5 counts", example: "بِمَآ أُنزِلَ", colorHex: "#00BCD4"),
-                TajweedRule(id: "madd_muttasil", name: "Madd Muttasil", arabicName: "مد متصل", category: category, description: "Connected prolongation of 4-5 counts", example: "جَآءَ", colorHex: "#E91E63"),
+                TajweedRule(id: "madd_muttasil", name: "Madd Muttasil", arabicName: "مد متصل", category: category, description: "Connected prolongation of 4-5 counts", example: "جَآءَ", colorHex: "#D32F2F"),
             ]
         case .qalqalah:
             return [
@@ -145,10 +223,22 @@ struct AboutView: View {
     var body: some View {
         ScrollView {
             VStack(spacing: 24) {
-                Image(systemName: "waveform.and.mic")
-                    .font(.system(size: 56))
-                    .foregroundStyle(.green)
-                    .padding(.top, 32)
+                ZStack {
+                    Circle()
+                        .fill(
+                            LinearGradient(
+                                colors: [.green.opacity(0.15), .teal.opacity(0.1)],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
+                        )
+                        .frame(width: 100, height: 100)
+
+                    Image(systemName: "waveform.and.mic")
+                        .font(.system(size: 40))
+                        .foregroundStyle(.green)
+                }
+                .padding(.top, 32)
 
                 Text("Tilawa")
                     .font(.largeTitle.bold())
@@ -162,7 +252,7 @@ struct AboutView: View {
                         .font(.body)
                         .lineSpacing(4)
 
-                    Text("Features include real-time audio analysis, word-by-word feedback, Tajweed rule identification, progress tracking, and personalized practice recommendations.")
+                    Text("Features include real-time audio analysis, word-by-word feedback, color-coded Tajweed highlighting, progress tracking, and personalized practice recommendations.")
                         .font(.body)
                         .foregroundStyle(.secondary)
                         .lineSpacing(4)

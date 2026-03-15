@@ -25,11 +25,11 @@ struct RecitationView: View {
 
                 VStack(spacing: 0) {
                     verseNavigationBar
-                    
+
                     ScrollView {
                         VStack(spacing: 24) {
                             verseDisplay
-                            
+
                             if viewModel.showTransliteration, let verse = viewModel.currentVerse, !verse.transliteration.isEmpty {
                                 Text(verse.transliteration)
                                     .font(.subheadline)
@@ -105,7 +105,7 @@ struct RecitationView: View {
             VStack(spacing: 2) {
                 Text("Verse \(viewModel.currentVerseIndex + 1) of \(viewModel.verses.count)")
                     .font(.subheadline.weight(.medium))
-                
+
                 Text(surah.arabicName)
                     .font(.caption)
                     .foregroundStyle(.secondary)
@@ -125,7 +125,7 @@ struct RecitationView: View {
         }
         .padding(.horizontal)
         .padding(.vertical, 10)
-        .background(Color(.secondarySystemBackground).opacity(0.5))
+        .background(.ultraThinMaterial)
     }
 
     private var verseDisplay: some View {
@@ -134,10 +134,7 @@ struct RecitationView: View {
                 if let feedback = viewModel.feedback {
                     wordByWordDisplay(verse: verse, feedback: feedback)
                 } else {
-                    Text(verse.arabicText)
-                        .font(.system(size: 32))
-                        .multilineTextAlignment(.center)
-                        .lineSpacing(16)
+                    TajweedTextView(words: verse.words, fontSize: 32, showLegend: true)
                         .padding(.horizontal)
                 }
             }
@@ -215,7 +212,11 @@ struct RecitationView: View {
                 } label: {
                     ZStack {
                         Circle()
-                            .fill(viewModel.audioService.isRecording ? Color.red : Color.green)
+                            .fill(
+                                viewModel.audioService.isRecording
+                                ? LinearGradient(colors: [.red, .red.opacity(0.8)], startPoint: .top, endPoint: .bottom)
+                                : LinearGradient(colors: [.green, .teal], startPoint: .topLeading, endPoint: .bottomTrailing)
+                            )
                             .frame(width: 72, height: 72)
                             .shadow(color: (viewModel.audioService.isRecording ? Color.red : Color.green).opacity(0.4), radius: 12, y: 4)
 
@@ -257,7 +258,9 @@ struct RecitationView: View {
             ForEach(0..<20, id: \.self) { index in
                 let height = waveHeight(for: index, level: viewModel.audioService.audioLevel)
                 RoundedRectangle(cornerRadius: 2)
-                    .fill(Color.green)
+                    .fill(
+                        LinearGradient(colors: [.green, .teal], startPoint: .bottom, endPoint: .top)
+                    )
                     .frame(width: 3, height: height)
                     .animation(.easeInOut(duration: 0.1), value: viewModel.audioService.audioLevel)
             }

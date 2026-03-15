@@ -2,7 +2,6 @@ import SwiftUI
 
 struct QuickPracticeView: View {
     @State private var selectedSurah: Surah?
-    @State private var showRecitation = false
 
     let quranService: QuranDataService
     let audioService: AudioRecordingService
@@ -41,9 +40,21 @@ struct QuickPracticeView: View {
     private var quickStartSection: some View {
         VStack(spacing: 16) {
             HStack(spacing: 14) {
-                Image(systemName: "mic.badge.plus")
-                    .font(.system(size: 32))
-                    .foregroundStyle(.green)
+                ZStack {
+                    Circle()
+                        .fill(
+                            LinearGradient(
+                                colors: [.green.opacity(0.2), .teal.opacity(0.15)],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
+                        )
+                        .frame(width: 52, height: 52)
+
+                    Image(systemName: "mic.badge.plus")
+                        .font(.system(size: 24))
+                        .foregroundStyle(.green)
+                }
 
                 VStack(alignment: .leading, spacing: 4) {
                     Text("Quick Practice")
@@ -73,7 +84,10 @@ struct QuickPracticeView: View {
                 .fill(Color(.secondarySystemGroupedBackground))
                 .overlay(
                     RoundedRectangle(cornerRadius: 20)
-                        .stroke(Color.green.opacity(0.2), lineWidth: 1)
+                        .stroke(
+                            LinearGradient(colors: [.green.opacity(0.3), .teal.opacity(0.2)], startPoint: .topLeading, endPoint: .bottomTrailing),
+                            lineWidth: 1
+                        )
                 )
         )
     }
@@ -83,7 +97,6 @@ struct QuickPracticeView: View {
             HStack {
                 Label("Beginner Surahs", systemImage: "star.fill")
                     .font(.headline)
-                    .foregroundStyle(.primary)
                 Spacer()
             }
 
@@ -109,7 +122,6 @@ struct QuickPracticeView: View {
             HStack {
                 Label("Popular Surahs", systemImage: "heart.fill")
                     .font(.headline)
-                    .foregroundStyle(.primary)
                 Spacer()
             }
 
@@ -122,7 +134,7 @@ struct QuickPracticeView: View {
                     Button {
                         selectedSurah = surah
                     } label: {
-                        PracticeSurahCard(surah: surah, color: .blue)
+                        PracticeSurahCard(surah: surah, color: .teal)
                     }
                     .buttonStyle(.plain)
                 }

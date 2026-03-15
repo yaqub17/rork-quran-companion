@@ -2,6 +2,7 @@ import SwiftUI
 
 struct ProgressView: View {
     @State private var viewModel: ProgressViewModel
+    @State private var appeared = false
 
     init(progressService: ProgressTrackingService) {
         self._viewModel = State(initialValue: ProgressViewModel(progressService: progressService))
@@ -21,7 +22,12 @@ struct ProgressView: View {
             }
             .background(Color(.systemGroupedBackground))
             .navigationTitle("Progress")
-            .task { viewModel.load() }
+            .task {
+                viewModel.load()
+                withAnimation(.easeOut(duration: 0.5).delay(0.1)) {
+                    appeared = true
+                }
+            }
         }
     }
 
@@ -70,15 +76,15 @@ struct ProgressView: View {
                 HStack(alignment: .bottom, spacing: 8) {
                     ForEach(progress.reversed()) { day in
                         VStack(spacing: 6) {
-                            RoundedRectangle(cornerRadius: 4)
+                            RoundedRectangle(cornerRadius: 6)
                                 .fill(
                                     LinearGradient(
-                                        colors: [.green.opacity(0.6), .green],
+                                        colors: [.green.opacity(0.5), .teal],
                                         startPoint: .bottom,
                                         endPoint: .top
                                     )
                                 )
-                                .frame(height: max(8, CGFloat(day.versesRecited) * 6))
+                                .frame(height: appeared ? max(8, CGFloat(day.versesRecited) * 6) : 8)
 
                             Text(dayLabel(day.date))
                                 .font(.caption2)
@@ -89,6 +95,7 @@ struct ProgressView: View {
                 }
                 .frame(height: 140)
                 .padding(.top, 8)
+                .animation(.spring(response: 0.6, dampingFraction: 0.7), value: appeared)
             }
         }
         .padding(16)
@@ -106,9 +113,9 @@ struct ProgressView: View {
 
                 ForEach(weakRules) { rule in
                     HStack(spacing: 12) {
-                        Image(systemName: "exclamationmark.triangle.fill")
-                            .foregroundStyle(.orange)
-                            .font(.subheadline)
+                        RoundedRectangle(cornerRadius: 4)
+                            .fill(Color(hex: rule.colorHex))
+                            .frame(width: 4, height: 36)
 
                         VStack(alignment: .leading, spacing: 2) {
                             HStack {

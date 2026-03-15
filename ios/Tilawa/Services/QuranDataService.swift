@@ -41,9 +41,99 @@ class QuranDataService {
                 position: index,
                 arabicText: text,
                 transliteration: "",
-                translation: ""
+                translation: "",
+                tajweedAnnotations: Self.tajweedAnnotations(for: text, surah: surah, verse: verse, position: index)
             )
         }
+    }
+
+    private static func tajweedAnnotations(for word: String, surah: Int, verse: Int, position: Int) -> [TajweedAnnotation] {
+        var annotations: [TajweedAnnotation] = []
+
+        let shaddah = "\u{0651}"
+        let laam = "\u{0644}"
+        let raa = "\u{0631}"
+        let sheen = "\u{0634}"
+        let saad = "\u{0635}"
+        let dal = "\u{062F}"
+        let noon = "\u{0646}"
+        let meem = "\u{0645}"
+        let alif = "\u{0627}"
+        let tatweel = "\u{0640}"
+        let superAlif = "\u{0670}"
+        let fathah = "\u{064E}"
+        let kasrah = "\u{0650}"
+        let dammah = "\u{064F}"
+        let sukun = "\u{0652}"
+        let alefMadda = "\u{0622}"
+        let tanweenFath = "\u{064B}"
+        let tanweenDamm = "\u{064C}"
+        let tanweenKasr = "\u{064D}"
+        let qaf = "\u{0642}"
+        let taa = "\u{0637}"
+        let ba = "\u{0628}"
+        let jeem = "\u{062C}"
+        let yaa = "\u{064A}"
+        let waw = "\u{0648}"
+        let alefLam = alif + laam
+
+        if word.contains(shaddah) {
+            if word.hasPrefix(alefLam + raa + shaddah) || word.hasPrefix(alefLam + sheen + shaddah) || word.hasPrefix(alefLam + saad + shaddah) || word.hasPrefix(alefLam + dal + shaddah) || word.hasPrefix(alefLam + noon + shaddah) || word.contains(laam + raa + shaddah) || word.contains(laam + saad + shaddah) || word.contains(laam + sheen + shaddah) {
+                if let range = word.range(of: laam) {
+                    annotations.append(TajweedAnnotation(range: range, rule: .laamShamsiyyah))
+                }
+            }
+        }
+
+        for char in [qaf, taa, ba, jeem, dal] {
+            if word.contains(char + sukun) {
+                if let range = word.range(of: char + sukun) {
+                    annotations.append(TajweedAnnotation(range: range, rule: .qalqalah))
+                }
+            }
+        }
+
+        if word.contains(noon + shaddah) {
+            if let range = word.range(of: noon + shaddah) {
+                annotations.append(TajweedAnnotation(range: range, rule: .ghunnah))
+            }
+        }
+        if word.contains(meem + shaddah) {
+            if let range = word.range(of: meem + shaddah) {
+                annotations.append(TajweedAnnotation(range: range, rule: .ghunnah))
+            }
+        }
+
+        if word.contains(tatweel + superAlif) {
+            if let range = word.range(of: tatweel + superAlif) {
+                annotations.append(TajweedAnnotation(range: range, rule: .maddNormal))
+            }
+        }
+        if word.contains(fathah + alif) {
+            if let range = word.range(of: fathah + alif) {
+                annotations.append(TajweedAnnotation(range: range, rule: .maddNormal))
+            }
+        }
+
+        if word.contains(alefMadda) {
+            if let range = word.range(of: alefMadda) {
+                annotations.append(TajweedAnnotation(range: range, rule: .maddMuttasil))
+            }
+        }
+
+        if word.contains(tanweenFath) || word.contains(tanweenDamm) || word.contains(tanweenKasr) {
+            if let range = word.range(of: tanweenFath) {
+                annotations.append(TajweedAnnotation(range: range, rule: .ikhfa))
+            } else if let range = word.range(of: tanweenDamm) {
+                annotations.append(TajweedAnnotation(range: range, rule: .ikhfa))
+            } else if let range = word.range(of: tanweenKasr) {
+                annotations.append(TajweedAnnotation(range: range, rule: .ikhfa))
+            }
+        }
+
+        let _ = [kasrah, dammah, yaa, waw]
+
+        return annotations
     }
 
     private static func sampleArabicWords(surah: Int, verse: Int) -> [String] {

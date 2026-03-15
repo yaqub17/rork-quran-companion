@@ -5,8 +5,10 @@ struct SurahDetailView: View {
     @State private var verses: [Verse] = []
     @State private var showTranslation = true
     @State private var showTransliteration = false
+    @State private var showTajweedColors = true
     @State private var selectedVerse: Verse?
     @State private var showRecitation = false
+    @State private var showTajweedLegend = false
 
     let surah: Surah
     let quranService: QuranDataService
@@ -24,12 +26,17 @@ struct SurahDetailView: View {
                         bismillah
                     }
 
+                    if showTajweedLegend {
+                        tajweedLegendSection
+                    }
+
                     LazyVStack(spacing: 0) {
                         ForEach(verses) { verse in
-                            VerseRowView(
+                            TajweedVerseRowView(
                                 verse: verse,
                                 showTranslation: showTranslation,
                                 showTransliteration: showTransliteration,
+                                showTajweedColors: showTajweedColors,
                                 onPractice: {
                                     selectedVerse = verse
                                     showRecitation = true
@@ -57,6 +64,15 @@ struct SurahDetailView: View {
                     Menu {
                         Toggle("Translation", isOn: $showTranslation)
                         Toggle("Transliteration", isOn: $showTransliteration)
+                        Divider()
+                        Toggle("Tajweed Colors", isOn: $showTajweedColors)
+                        Button {
+                            withAnimation(.snappy) {
+                                showTajweedLegend.toggle()
+                            }
+                        } label: {
+                            Label("Tajweed Legend", systemImage: showTajweedLegend ? "checkmark" : "")
+                        }
                     } label: {
                         Image(systemName: "textformat.size")
                     }
@@ -86,30 +102,38 @@ struct SurahDetailView: View {
     }
 
     private var surahHeader: some View {
-        VStack(spacing: 12) {
-            Text(surah.arabicName)
-                .font(.system(size: 36, weight: .bold))
-
-            Text(surah.englishTranslation)
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
-
-            HStack(spacing: 16) {
-                Label(surah.revelationType.rawValue, systemImage: "mappin.circle.fill")
-                Label("\(surah.versesCount) Verses", systemImage: "text.alignleft")
-            }
-            .font(.caption)
-            .foregroundStyle(.secondary)
-        }
-        .frame(maxWidth: .infinity)
-        .padding(.vertical, 24)
-        .background(
-            LinearGradient(
-                colors: [.green.opacity(0.08), .clear],
-                startPoint: .top,
-                endPoint: .bottom
+        ZStack {
+            MeshGradient(
+                width: 3, height: 3,
+                points: [
+                    [0, 0], [0.5, 0], [1, 0],
+                    [0, 0.5], [0.5, 0.5], [1, 0.5],
+                    [0, 1], [0.5, 1], [1, 1]
+                ],
+                colors: [
+                    .teal.opacity(0.3), .green.opacity(0.2), .mint.opacity(0.25),
+                    .green.opacity(0.25), .teal.opacity(0.35), .cyan.opacity(0.2),
+                    .mint.opacity(0.2), .green.opacity(0.3), .teal.opacity(0.25)
+                ]
             )
-        )
+
+            VStack(spacing: 12) {
+                Text(surah.arabicName)
+                    .font(.system(size: 36, weight: .bold))
+
+                Text(surah.englishTranslation)
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+
+                HStack(spacing: 16) {
+                    Label(surah.revelationType.rawValue, systemImage: "mappin.circle.fill")
+                    Label("\(surah.versesCount) Verses", systemImage: "text.alignleft")
+                }
+                .font(.caption)
+                .foregroundStyle(.secondary)
+            }
+            .padding(.vertical, 24)
+        }
     }
 
     private var bismillah: some View {
@@ -119,26 +143,44 @@ struct SurahDetailView: View {
             .padding(.vertical, 20)
             .background(Color(.secondarySystemBackground).opacity(0.5))
     }
+
+    private var tajweedLegendSection: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack {
+                Label("Tajweed Color Guide", systemImage: "paintpalette.fill")
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(.green)
+                Spacer()
+                Button {
+                    withAnimation(.snappy) { showTajweedLegend = false }
+                } label: {
+                    Image(systemName: "xmark.circle.fill")
+                        .foregroundStyle(.secondary)
+                }
+            }
+
+            TajweedLegendView()
+        }
+        .padding(16)
+        .background(Color(.secondarySystemGroupedBackground))
+        .clipShape(.rect(cornerRadius: 14))
+        .padding(.horizontal, 16)
+        .padding(.vertical, 12)
+        .transition(.scale.combined(with: .opacity))
+    }
 }
 
-struct VerseRowView: View {
+struct TajweedVerseRowView: View {
     let verse: Verse
     let showTranslation: Bool
     let showTransliteration: Bool
+    let showTajweedColors: Bool
     let onPractice: () -> Void
 
     var body: some View {
         VStack(alignment: .trailing, spacing: 12) {
             HStack {
-                ZStack {
-                    Circle()
-                        .fill(Color.green.opacity(0.1))
-                        .frame(width: 32, height: 32)
-
-                    Text("\(verse.verseNumber)")
-                        .font(.system(.caption, design: .rounded, weight: .bold))
-                        .foregroundStyle(.green)
-                }
+                verseNumberBadge
 
                 Spacer()
 
@@ -151,11 +193,16 @@ struct VerseRowView: View {
                 }
             }
 
-            Text(verse.arabicText)
-                .font(.system(size: 26))
-                .multilineTextAlignment(.trailing)
-                .lineSpacing(12)
-                .frame(maxWidth: .infinity, alignment: .trailing)
+            if showTajweedColors {
+                TajweedTextView(words: verse.words, fontSize: 26, showLegend: false)
+                    .frame(maxWidth: .infinity, alignment: .trailing)
+            } else {
+                Text(verse.arabicText)
+                    .font(.system(size: 26))
+                    .multilineTextAlignment(.trailing)
+                    .lineSpacing(12)
+                    .frame(maxWidth: .infinity, alignment: .trailing)
+            }
 
             if showTransliteration && !verse.transliteration.isEmpty {
                 Text(verse.transliteration)
@@ -174,5 +221,23 @@ struct VerseRowView: View {
             }
         }
         .padding(16)
+    }
+
+    private var verseNumberBadge: some View {
+        ZStack {
+            Circle()
+                .fill(
+                    LinearGradient(
+                        colors: [.green.opacity(0.12), .teal.opacity(0.08)],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                )
+                .frame(width: 32, height: 32)
+
+            Text("\(verse.verseNumber)")
+                .font(.system(.caption, design: .rounded, weight: .bold))
+                .foregroundStyle(.green)
+        }
     }
 }
