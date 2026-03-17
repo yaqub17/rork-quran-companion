@@ -1,6 +1,6 @@
 import SwiftUI
 
-struct ProgressView: View {
+struct ProgressTrackerView: View {
     @State private var viewModel: ProgressViewModel
     @State private var appeared = false
 

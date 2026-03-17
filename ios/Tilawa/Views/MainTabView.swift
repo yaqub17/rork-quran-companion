@@ -38,7 +38,7 @@ struct MainTabView: View {
             }
 
             Tab("Progress", systemImage: "chart.bar.fill", value: 3) {
-                ProgressView(progressService: progressService)
+                ProgressTrackerView(progressService: progressService)
             }
 
             Tab("Settings", systemImage: "gearshape.fill", value: 4) {
