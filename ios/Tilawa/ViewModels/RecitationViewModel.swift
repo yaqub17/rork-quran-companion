@@ -9,6 +9,7 @@ class RecitationViewModel {
     var surah: Surah?
     var isRecording = false
     var isAnalyzing = false
+    var isLoadingVerses = false
     var feedback: RecitationFeedback?
     var showFeedback = false
     var audioLevel: Float = 0.0
@@ -34,13 +35,17 @@ class RecitationViewModel {
         self.progressService = progressService
     }
 
-    func load(surah: Surah) {
+    func load(surah: Surah) async {
         self.surah = surah
-        self.verses = quranService.verses(for: surah)
+        isLoadingVerses = true
+
+        let fetched = await quranService.fetchVerses(for: surah)
+        self.verses = fetched
         self.currentVerseIndex = 0
         self.currentVerse = verses.first
         self.feedback = nil
         self.showFeedback = false
+        isLoadingVerses = false
     }
 
     func startRecording() async {

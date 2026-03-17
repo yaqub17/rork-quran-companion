@@ -3,6 +3,7 @@ import SwiftUI
 struct SurahDetailView: View {
     @Environment(\.dismiss) private var dismiss
     @State private var verses: [Verse] = []
+    @State private var isLoading = true
     @State private var showTranslation = true
     @State private var showTransliteration = false
     @State private var showTajweedColors = true
@@ -28,6 +29,18 @@ struct SurahDetailView: View {
 
                     if showTajweedLegend {
                         tajweedLegendSection
+                    }
+
+                    if isLoading {
+                        VStack(spacing: 16) {
+                            ProgressView()
+                                .controlSize(.large)
+                            Text("Loading verses...")
+                                .font(.subheadline)
+                                .foregroundStyle(.secondary)
+                        }
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 40)
                     }
 
                     LazyVStack(spacing: 0) {
@@ -86,7 +99,9 @@ struct SurahDetailView: View {
                 }
             }
             .task {
-                verses = quranService.verses(for: surah)
+                isLoading = true
+                verses = await quranService.fetchVerses(for: surah)
+                isLoading = false
             }
             .fullScreenCover(isPresented: $showRecitation) {
                 RecitationView(

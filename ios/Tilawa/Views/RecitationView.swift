@@ -23,38 +23,48 @@ struct RecitationView: View {
             ZStack {
                 Color(.systemBackground).ignoresSafeArea()
 
-                VStack(spacing: 0) {
-                    verseNavigationBar
-
-                    ScrollView {
-                        VStack(spacing: 24) {
-                            verseDisplay
-
-                            if viewModel.showTransliteration, let verse = viewModel.currentVerse, !verse.transliteration.isEmpty {
-                                Text(verse.transliteration)
-                                    .font(.subheadline)
-                                    .italic()
-                                    .foregroundStyle(.secondary)
-                                    .multilineTextAlignment(.center)
-                                    .padding(.horizontal)
-                            }
-
-                            if viewModel.showTranslation, let verse = viewModel.currentVerse, !verse.translation.isEmpty {
-                                Text(verse.translation)
-                                    .font(.subheadline)
-                                    .foregroundStyle(.secondary)
-                                    .multilineTextAlignment(.center)
-                                    .lineSpacing(4)
-                                    .padding(.horizontal)
-                            }
-                        }
-                        .padding(.top, 20)
-                        .padding(.bottom, 200)
+                if viewModel.isLoadingVerses {
+                    VStack(spacing: 16) {
+                        ProgressView()
+                            .controlSize(.large)
+                        Text("Loading verses...")
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
                     }
+                } else {
+                    VStack(spacing: 0) {
+                        verseNavigationBar
 
-                    Spacer()
+                        ScrollView {
+                            VStack(spacing: 24) {
+                                verseDisplay
 
-                    recordingControls
+                                if viewModel.showTransliteration, let verse = viewModel.currentVerse, !verse.transliteration.isEmpty {
+                                    Text(verse.transliteration)
+                                        .font(.subheadline)
+                                        .italic()
+                                        .foregroundStyle(.secondary)
+                                        .multilineTextAlignment(.center)
+                                        .padding(.horizontal)
+                                }
+
+                                if viewModel.showTranslation, let verse = viewModel.currentVerse, !verse.translation.isEmpty {
+                                    Text(verse.translation)
+                                        .font(.subheadline)
+                                        .foregroundStyle(.secondary)
+                                        .multilineTextAlignment(.center)
+                                        .lineSpacing(4)
+                                        .padding(.horizontal)
+                                }
+                            }
+                            .padding(.top, 20)
+                            .padding(.bottom, 220)
+                        }
+
+                        Spacer()
+
+                        bottomControls
+                    }
                 }
             }
             .navigationTitle(surah.englishName)
@@ -74,7 +84,7 @@ struct RecitationView: View {
                 }
             }
             .task {
-                viewModel.load(surah: surah)
+                await viewModel.load(surah: surah)
                 if let initialVerse {
                     let index = viewModel.verses.firstIndex(where: { $0.id == initialVerse.id }) ?? 0
                     viewModel.selectVerse(at: index)
@@ -169,15 +179,15 @@ struct RecitationView: View {
         }
     }
 
-    private var recordingControls: some View {
-        VStack(spacing: 16) {
+    private var bottomControls: some View {
+        VStack(spacing: 12) {
             if viewModel.audioService.isRecording {
                 audioWaveform
             }
 
             if viewModel.isAnalyzing {
                 VStack(spacing: 12) {
-                    SwiftUI.ProgressView()
+                    ProgressView()
                         .controlSize(.large)
                     Text("Analyzing your recitation...")
                         .font(.subheadline)
@@ -186,7 +196,7 @@ struct RecitationView: View {
                 .padding(.bottom, 8)
             }
 
-            HStack(spacing: 32) {
+            HStack(spacing: 20) {
                 if viewModel.feedback != nil {
                     Button {
                         viewModel.showFeedback = true
@@ -199,6 +209,7 @@ struct RecitationView: View {
                         }
                         .foregroundStyle(.green)
                     }
+                    .frame(width: 56)
                 }
 
                 Button {
@@ -229,28 +240,65 @@ struct RecitationView: View {
                 .disabled(viewModel.isAnalyzing)
                 .sensoryFeedback(.impact(weight: .medium), trigger: viewModel.audioService.isRecording)
 
-                if viewModel.feedback != nil {
-                    Button {
-                        withAnimation(.snappy) { viewModel.nextVerse() }
-                    } label: {
-                        VStack(spacing: 4) {
-                            Image(systemName: "forward.fill")
-                                .font(.title3)
-                            Text("Next")
-                                .font(.caption2)
-                        }
-                        .foregroundStyle(.green)
-                    }
-                    .disabled(viewModel.currentVerseIndex >= viewModel.verses.count - 1)
-                }
+                nextAyahButton
+                    .frame(width: 56)
+            }
+
+            if !isLastVerse {
+                nextAyahLargeButton
             }
         }
-        .padding(24)
+        .padding(.horizontal, 20)
+        .padding(.top, 16)
+        .padding(.bottom, 8)
         .background(
             Rectangle()
                 .fill(.ultraThinMaterial)
                 .ignoresSafeArea(edges: .bottom)
         )
+    }
+
+    private var isLastVerse: Bool {
+        viewModel.currentVerseIndex >= viewModel.verses.count - 1
+    }
+
+    @ViewBuilder
+    private var nextAyahButton: some View {
+        if !isLastVerse {
+            Button {
+                withAnimation(.snappy) { viewModel.nextVerse() }
+            } label: {
+                VStack(spacing: 4) {
+                    Image(systemName: "forward.fill")
+                        .font(.title3)
+                    Text("Next")
+                        .font(.caption2)
+                }
+                .foregroundStyle(.green)
+            }
+        }
+    }
+
+    private var nextAyahLargeButton: some View {
+        Button {
+            withAnimation(.snappy) { viewModel.nextVerse() }
+        } label: {
+            HStack(spacing: 8) {
+                Text("Next Ayah")
+                    .font(.subheadline.weight(.semibold))
+
+                Image(systemName: "arrow.right")
+                    .font(.subheadline.weight(.semibold))
+            }
+            .foregroundStyle(.white)
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 14)
+            .background(
+                LinearGradient(colors: [.green, .teal], startPoint: .leading, endPoint: .trailing),
+                in: .rect(cornerRadius: 14)
+            )
+        }
+        .sensoryFeedback(.selection, trigger: viewModel.currentVerseIndex)
     }
 
     private var audioWaveform: some View {
